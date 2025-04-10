@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secure Loading Portal</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+    <style>
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+            100% { transform: translateY(0px); }
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+        
+        @keyframes gradient {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        
+        .gradient-bg {
+            background: linear-gradient(-45deg, #f7e018, #ffd700, #000000, #333333);
+            background-size: 400% 400%;
+            animation: gradient 15s ease infinite;
+        }
+        
+        .floating {
+            animation: float 3s ease-in-out infinite;
+        }
+        
+        .pulse {
+            animation: pulse 2s ease-in-out infinite;
+        }
+        
+        .password-container {
+            transform: scale(0);
+            transition: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+        
+        .password-container.show {
+            transform: scale(1);
+        }
+        
+        .input-highlight {
+            transition: all 0.3s ease;
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            height: 2px;
+            width: 0;
+            background: #f7e018;
+        }
+        
+        input:focus ~ .input-highlight {
+            width: 100%;
+        }
+        
+        .loading-dots span {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #f7e018;
+            margin: 0 2px;
+        }
+        
+        .loading-dots span:nth-child(1) {
+            animation: pulse 1.5s infinite;
+        }
+        
+        .loading-dots span:nth-child(2) {
+            animation: pulse 1.5s infinite 0.2s;
+        }
+        
+        .loading-dots span:nth-child(3) {
+            animation: pulse 1.5s infinite 0.4s;
+        }
+
+        .lemon-image {
+            width: 120px;
+            height: 120px;
+            object-fit: contain;
+        }
+    </style>
+</head>
+<body class="gradient-bg min-h-screen flex items-center justify-center p-4">
+    <!-- Loading Animation -->
+    <div id="loading" class="flex flex-col items-center justify-center animate__animated animate__fadeIn">
+        <div class="floating mb-8">
+            <img src="photo_5996864734789485764_x.jpg" alt="Lemon" class="lemon-image" style="border-radius: 2rem;">
+        </div>
+        
+        
+        <h1 class="text-black text-3xl font-bold mb-2">Lemon16_bot</h1>
+        <p class="text-black opacity-80 mb-6">Initializing security protocols</p>
+        
+        <div class="loading-dots">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+        
+        <div class="w-full max-w-xs h-1 bg-black bg-opacity-20 rounded-full mt-8 overflow-hidden">
+            <div id="progressBar" class="h-full bg-[#f7e018] rounded-full" style="width: 0%"></div>
+        </div>
+    </div>
+    
+    <!-- Password Prompt -->
+    <div id="passwordPrompt" class="password-container bg-black rounded-xl shadow-2xl p-8 max-w-md w-full">
+        <div class="text-center mb-8">
+            <div class="mx-auto w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mb-4">
+                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#f7e018" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                    <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                </svg>
+            </div>
+            <h2 class="text-2xl font-bold text-[#f7e018]">Authentication Required</h2>
+            <p class="text-gray-300 mt-2">Please enter your secure access code</p>
+        </div>
+        
+        <div class="relative mb-6">
+            <input type="password" id="passwordInput" placeholder="Enter password" 
+                   class="w-full px-4 py-3 bg-gray-900 text-white border border-gray-700 rounded-lg focus:outline-none focus:border-yellow-500 transition">
+            <div class="input-highlight"></div>
+        </div>
+        
+        <button onclick="checkPassword()" 
+                class="w-full bg-[#f7e018] hover:bg-yellow-400 text-black font-medium py-3 px-4 rounded-lg transition transform hover:scale-105 active:scale-95">
+            Verify Identity
+        </button>
+        
+        <div id="errorMessage" class="text-red-400 text-sm mt-4 text-center hidden">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline mr-1">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="12" y1="8" x2="12" y2="12"></line>
+                <line x1="12" y1="16" x2="12.01" y2="16"></line>
+            </svg>
+            <span>Incorrect password. Please try again.</span>
+        </div>
+    </div>
+
+    <script>
+        // Correct password (change this to your desired password)
+        const correctPassword = "@lemonadmin112";
+        
+        // Animate progress bar
+        let progress = 0;
+        const progressInterval = setInterval(() => {
+            progress += 1;
+            document.getElementById('progressBar').style.width = `${progress}%`;
+            
+            if (progress >= 100) {
+                clearInterval(progressInterval);
+                // Fadeheaded out loading
+                const loading = document.getElementById('loading');
+                loading.classList.add('animate__animated', 'animate__fadeOut');
+                
+                // Show password prompt with animation
+                setTimeout(() => {
+                    loading.style.display = 'none';
+                    const passwordPrompt = document.getElementById('passwordPrompt');
+                    passwordPrompt.classList.add('show');
+                }, 500);
+            }
+        }, 30);
+        
+        // Check password function
+        function checkPassword() {
+            const input = document.getElementById('passwordInput').value;
+            const errorMessage = document.getElementById('errorMessage');
+            
+            if (input === correctPassword) {
+                // Success animation
+                const passwordPrompt = document.getElementById('passwordPrompt');
+                passwordPrompt.classList.remove('show');
+                passwordPrompt.classList.add('animate__animated', 'animate__zoomOut');
+                
+                setTimeout(() => {
+                    // Redirect to dashboard
+                    window.location.href = 'https://l16last.onrender.com/dashboard';
+                }, 500);
+            } else {
+                // Error animation
+                errorMessage.classList.remove('hidden');
+                errorMessage.classList.add('animate__animated', 'animate__headShake');
+                
+                // Clear animation after it completes
+                setTimeout(() => {
+                    errorMessage.classList.remove('animate__animated', 'animate__headShake');
+                }, 1000);
+                
+                // Shake the input
+                const passwordInput = document.getElementById('passwordInput');
+                passwordInput.classList.add('animate__animated', 'animate__headShake');
+                setTimeout(() => {
+                    passwordInput.classList.remove('animate__animated', 'animate__headShake');
+                }, 1000);
+                
+                // Clear input
+                passwordInput.value = '';
+                passwordInput.focus();
+            }
+        }
+        
+        // Allow Enter key to submit password
+        document.getElementById('passwordInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                checkPassword();
+            }
+        });
+    </script>
+</body>
+</html>
